@@ -3141,11 +3141,22 @@ std::string RigidBodyTree<T>::getBodyOrFrameName(int body_or_frame_id) const {
 }
 
 template <typename T>
+void RigidBodyTree<T>::addDistanceConstraint(
+      int from_body_or_frame_ind, const Eigen::Vector3d& from_point,
+      int to_body_or_frame_ind, const Eigen::Vector3d& to_point,
+      double distance) {
+  RigidBodyDistCon dc(from_body_or_frame_ind, from_point,
+                      to_body_or_frame_ind, to_point,
+                      distance);
+  distCons.push_back(dc);
+}
+
+template <typename T>
 template <typename Scalar>
 Matrix<Scalar, Eigen::Dynamic, 1> RigidBodyTree<T>::positionConstraints(
     const KinematicsCache<Scalar>& cache) const {
   CheckCacheValidity(cache);
-  Matrix<Scalar, Eigen::Dynamic, 1> ret(6 * loops.size(), 1);
+  Matrix<Scalar, Eigen::Dynamic, 1> ret(6 * loops.size() + distCons.size(), 1);
   for (size_t i = 0; i < loops.size(); ++i) {
     {  // position constraint
       auto ptA_in_B = transformPoints(cache, Vector3<Scalar>::Zero(),
@@ -3161,6 +3172,18 @@ Matrix<Scalar, Eigen::Dynamic, 1> RigidBodyTree<T>::positionConstraints(
       ret.template middleRows<3>(6 * i + 3) = axis_A_end_in_B - loops[i].axis_;
     }
   }
+  for (size_t i = 0; i < distCons.size(); ++i) {
+    auto measured_dist
+          = transformPoints(cache,
+                            distCons[i].from_point.template cast<Scalar>(),
+                            distCons[i].from_body, 0)
+            - transformPoints(cache,
+                              distCons[i].to_point.template cast<Scalar>(),
+                              distCons[i].to_body, 0);
+    std::cout << measured_dist.norm() - distCons[i].distance << " , ";
+    ret(6 * loops.size() + i) = measured_dist.norm() - distCons[i].distance;
+  }
+  std::cout << std::endl << std::endl;
   return ret;
 }
 
@@ -3174,7 +3197,8 @@ RigidBodyTree<T>::positionConstraintsJacobian(
     const KinematicsCache<Scalar>& cache, bool in_terms_of_qdot) const {
   CheckCacheValidity(cache);
   Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> ret(
-      6 * loops.size(), in_terms_of_qdot ? num_positions_ : num_velocities_);
+      6 * loops.size() + distCons.size(),
+      in_terms_of_qdot ? num_positions_ : num_velocities_);
 
   for (size_t i = 0; i < loops.size(); ++i) {
     // position constraint
@@ -3188,6 +3212,25 @@ RigidBodyTree<T>::positionConstraintsJacobian(
             .frameA_->get_frame_index(),
         loops[i].frameB_->get_frame_index(), in_terms_of_qdot);
   }
+  for (size_t i = 0; i < distCons.size(); ++i) {
+    auto measured_dist
+          = transformPoints(cache,
+                            distCons[i].from_point.template cast<Scalar>(),
+                            distCons[i].from_body, 0)
+            - transformPoints(cache,
+                              distCons[i].to_point.template cast<Scalar>(),
+                              distCons[i].to_body, 0);
+    auto J = transformPointsJacobian(cache, distCons[i].from_point
+                                          .template cast<Scalar>(),
+                                      distCons[i].from_body, 0,
+                                      in_terms_of_qdot)
+              - transformPointsJacobian(cache, distCons[i].to_point
+                                            .template cast<Scalar>(),
+                                        distCons[i].to_body, 0,
+                                        in_terms_of_qdot);
+    ret.template middleRows<1>(6 * loops.size() + i)
+          = (measured_dist.transpose() / measured_dist.norm()) * J;
+  }
   return ret;
 }
 
@@ -3197,7 +3240,7 @@ Matrix<Scalar, Eigen::Dynamic, 1>
 RigidBodyTree<T>::positionConstraintsJacDotTimesV(
     const KinematicsCache<Scalar>& cache) const {
   CheckCacheValidity(cache);
-  Matrix<Scalar, Eigen::Dynamic, 1> ret(6 * loops.size(), 1);
+  Matrix<Scalar, Eigen::Dynamic, 1> ret(6 * loops.size() + distCons.size(), 1);
 
   for (size_t i = 0; i < loops.size(); ++i) {
     // position constraint
@@ -3209,6 +3252,21 @@ RigidBodyTree<T>::positionConstraintsJacDotTimesV(
         cache, loops[i].axis_,
         loops[i].frameA_->get_frame_index(),
         loops[i].frameB_->get_frame_index());
+  }
+  for (size_t i = 0; i < distCons.size(); ++i) {
+    auto measured_dist
+          = transformPoints(cache,
+                            distCons[i].from_point.template cast<Scalar>(),
+                            distCons[i].from_body, 0)
+            - transformPoints(cache,
+                              distCons[i].to_point.template cast<Scalar>(),
+                              distCons[i].to_body, 0);
+    auto J = transformPointsJacobianDotTimesV(cache, distCons[i].from_point,
+                                              distCons[i].from_body, 0)
+            - transformPointsJacobianDotTimesV(cache, distCons[i].to_point,
+                                                  distCons[i].to_body, 0);
+    ret.template middleRows<1>(6 * loops.size() + i)
+          = (measured_dist.transpose() / measured_dist.norm()) * J;
   }
   return ret;
 }
@@ -3261,7 +3319,7 @@ size_t RigidBodyTree<T>::getNumJointLimitConstraints() const {
 
 template <typename T>
 size_t RigidBodyTree<T>::getNumPositionConstraints() const {
-  return loops.size() * 6;
+  return loops.size() * 6 + distCons.size();
 }
 
 namespace {
@@ -3595,6 +3653,10 @@ template Vector3d                 RigidBodyTree<double>::centerOfMassJacobianDot
 // Explicit template instantiations for centroidalMomentumMatrixDotTimesV.
 template TwistVector<AutoDiffXd     > RigidBodyTree<double>::centroidalMomentumMatrixDotTimesV<AutoDiffXd     >(KinematicsCache<AutoDiffXd     >&, set<int, less<int>, allocator<int>> const&) const;  // NOLINT
 template TwistVector<double         > RigidBodyTree<double>::centroidalMomentumMatrixDotTimesV<double         >(KinematicsCache<double         >&, set<int, less<int>, allocator<int>> const&) const;  // NOLINT
+
+// Explicit template instantiations for positionConstraints.
+//template VectorX<AutoDiffXd     > RigidBodyTree<double>::addDistanceConstraint<AutoDiffXd     >(int, const Eigen::Vector3d&, int, const Eigen::Vector3d&, double) ;  // NOLINT
+//template VectorXd                 RigidBodyTree<double>::addDistanceConstraint<double         >(int, const Eigen::Vector3d&, int, const Eigen::Vector3d&, double) ;  // NOLINT
 
 // Explicit template instantiations for positionConstraints.
 template VectorX<AutoDiffXd     > RigidBodyTree<double>::positionConstraints<AutoDiffXd     >(KinematicsCache<AutoDiffXd     > const&) const;  // NOLINT
