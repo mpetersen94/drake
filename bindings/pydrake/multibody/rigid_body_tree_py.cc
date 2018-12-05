@@ -385,6 +385,11 @@ PYBIND11_MODULE(rigid_body_tree, m) {
               return self->frictionTorques(v);
             },
             doc.RigidBodyTree.frictionTorques.doc)
+      .def("CalcGeneralizedSpringForces",
+           [](const RigidBodyTree<double>* self, const VectorX<T>& q) {
+             return self->CalcGeneralizedSpringForces(q);
+           },
+           doc.RigidBodyTree.CalcGeneralizedSpringForces.doc)
         .def("inverseDynamics", &RigidBodyTree<double>::inverseDynamics<T>,
             py::arg("cache"), py::arg("external_wrenches"), py::arg("vd"),
             py::arg("include_velocity_terms") = true,
