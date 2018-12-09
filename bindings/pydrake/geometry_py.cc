@@ -78,7 +78,10 @@ PYBIND11_MODULE(geometry, m) {
           doc.QueryObject.inspector.doc)
       .def("ComputePointPairPenetration",
           &QueryObject<T>::ComputePointPairPenetration,
-          doc.QueryObject.ComputePointPairPenetration.doc);
+          doc.QueryObject.ComputePointPairPenetration.doc)
+      .def("ComputeSignedDistancePairwiseClosestPoints",
+          &QueryObject<T>::ComputeSignedDistancePairwiseClosestPoints,
+          doc.QueryObject.ComputeSignedDistancePairwiseClosestPoints.doc);
   pysystems::AddValueInstantiation<QueryObject<T>>(m);
 
   py::module::import("pydrake.systems.lcm");
@@ -119,6 +122,20 @@ PYBIND11_MODULE(geometry, m) {
           doc.PenetrationAsPointPair.nhat_BA_W.doc)
       .def_readwrite("depth", &PenetrationAsPointPair<T>::depth,
           doc.PenetrationAsPointPair.depth.doc);
+
+  // SignedDistancePair
+  py::class_<SignedDistancePair<T>>(m, "SignedDistancePair")
+      .def(py::init<>(), doc.SignedDistancePair.ctor.doc_0args)
+      .def_readwrite(
+          "id_A", &SignedDistancePair<T>::id_A, doc.SignedDistancePair.id_A.doc)
+      .def_readwrite(
+          "id_B", &SignedDistancePair<T>::id_B, doc.SignedDistancePair.id_B.doc)
+      .def_readwrite("p_ACa", &SignedDistancePair<T>::p_ACa,
+          doc.SignedDistancePair.p_ACa.doc)
+      .def_readwrite("p_BCb", &SignedDistancePair<T>::p_BCb,
+          doc.SignedDistancePair.p_BCb.doc)
+      .def_readwrite("distance", &SignedDistancePair<T>::distance,
+          doc.SignedDistancePair.distance.doc);
 }
 
 }  // namespace
