@@ -14,9 +14,10 @@ def hermetic_python_env():
     #
     # If https://github.com/bazelbuild/bazel/issues/4939 gets fixed, we can
     # revisit whether manually specifying a hermetic env is still necessary.
-    return select({
-        "@drake//tools/skylark:linux": {
-            "PYTHONNOUSERSITE": "1",
-        },
-        "//conditions:default": {},
-    })
+    # return select({
+    #     "@drake//tools/skylark:linux": {
+    #         "PYTHONNOUSERSITE": "1",
+    #     },
+    #     "//conditions:default": {},
+    # })
+    return {}
