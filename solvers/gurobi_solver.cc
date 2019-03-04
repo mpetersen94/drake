@@ -750,7 +750,7 @@ void GurobiSolver::Solve(const MathematicalProgram& prog,
 
   int error = 0;
   // TODO(naveenoid) : This needs access externally.
-  double sparseness_threshold = 1e-14;
+  double sparseness_threshold = 1e-13;
   double constant_cost = 0;
   if (!error) {
     error = AddCosts(model, &constant_cost, prog, sparseness_threshold);

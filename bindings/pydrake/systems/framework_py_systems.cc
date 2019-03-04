@@ -472,6 +472,9 @@ struct Impl {
         .def("_DoCalcDiscreteVariableUpdates",
             &LeafSystemPublic::DoCalcDiscreteVariableUpdates,
             doc.LeafSystem.DoCalcDiscreteVariableUpdates.doc)
+        .def("AllocateDiscreteVariables",
+            &LeafSystemPublic::AllocateDiscreteVariables,
+            doc.LeafSystem.AllocateDiscreteVariables.doc)
         // Abstract state.
         .def("_DeclareAbstractState", &LeafSystemPublic::DeclareAbstractState,
             // Keep alive, ownership: `AbstractValue` keeps `self` alive.
