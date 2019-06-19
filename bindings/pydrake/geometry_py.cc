@@ -67,6 +67,8 @@ void DoScalarDependentDefinitions(py::module m, T) {
         m, "SceneGraph", param, doc.SceneGraph.doc);
     cls  // BR
         .def(py::init<>(), doc.SceneGraph.ctor.doc)
+        .def("model_inspector", &SceneGraph<T>::model_inspector,
+            py_reference_internal, doc.SceneGraph.model_inspector.doc)
         .def("get_source_pose_port", &SceneGraph<T>::get_source_pose_port,
             py_reference_internal, doc.SceneGraph.get_source_pose_port.doc)
         .def("get_pose_bundle_output_port",
