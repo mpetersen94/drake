@@ -65,16 +65,16 @@ PYBIND11_MODULE(trajectory_optimization, m) {
               -> VectorXDecisionVariable { return self.input(index); },
           doc.MultipleShooting.input.doc_1args)
       .def("NewSequentialVariable",
-          [](MultipleShooting& self, int rows, const std::string &name)
-              -> VectorXDecisionVariable {
-                return self.NewSequentialVariable(rows, name);
-              },
+          [](MultipleShooting& self, int rows,
+              const std::string& name) -> VectorXDecisionVariable {
+            return self.NewSequentialVariable(rows, name);
+          },
           doc.MultipleShooting.NewSequentialVariable.doc)
       .def("GetSequentialVariableAtIndex",
-          [](const MultipleShooting& self, const std::string &name, int index)
-              -> VectorXDecisionVariable {
-                return self.GetSequentialVariableAtIndex(name, index);
-              },
+          [](const MultipleShooting& self, const std::string& name,
+              int index) -> VectorXDecisionVariable {
+            return self.GetSequentialVariableAtIndex(name, index);
+          },
           doc.MultipleShooting.GetSequentialVariableAtIndex.doc)
       .def("AddRunningCost",
           [](MultipleShooting& prog, const symbolic::Expression& g) {
@@ -112,6 +112,9 @@ PYBIND11_MODULE(trajectory_optimization, m) {
       .def("AddStateTrajectoryCallback",
           &MultipleShooting::AddStateTrajectoryCallback,
           doc.MultipleShooting.AddStateTrajectoryCallback.doc)
+      .def("AddCompleteTrajectoryCallback",
+          &MultipleShooting::AddCompleteTrajectoryCallback,
+          doc.MultipleShooting.AddCompleteTrajectoryCallback.doc)
       .def("SetInitialTrajectory", &MultipleShooting::SetInitialTrajectory,
           doc.MultipleShooting.SetInitialTrajectory.doc)
       .def("GetSampleTimes",

@@ -52,6 +52,7 @@ class MyDirectTrajOpt : public MultipleShooting {
   using MultipleShooting::u_vars;
   using MultipleShooting::timesteps_are_decision_variables;
   using MultipleShooting::fixed_timestep;
+  using MultipleShooting::GetSequentialVariable;
 
  private:
   void DoAddRunningCost(const symbolic::Expression& g) override {}
@@ -433,16 +434,21 @@ GTEST_TEST(MultipleShootingTest, NewSequentialVariableTest) {
 
   solvers::MathematicalProgramResult result = Solve(prog);
   ASSERT_TRUE(result.is_success());
+  // osqp can fail in polishing step, such that the accuracy cannot reach
+  // 1E-6.
+  const double tol =
+      result.get_solver_id() == solvers::OsqpSolver::id() ? 4E-6 : 1E-6;
   for (int i = 0; i < kNumSampleTimes; i++) {
-    // osqp can fail in polishing step, such that the accuracy cannot reach
-    // 1E-6.
-    const double tol =
-        result.get_solver_id() == solvers::OsqpSolver::id() ? 4E-6 : 1E-6;
     // Verify that GetSequentialVariableAtIndex() works as expected.
     EXPECT_TRUE(CompareMatrices(
         -2.0 * result.GetSolution(prog.GetSequentialVariableAtIndex("w", i)),
         state_value, tol));
   }
+  Eigen::VectorXd knot_state_value(6);
+  knot_state_value << state_value, state_value, state_value;
+  EXPECT_TRUE(CompareMatrices(
+      -2.0 * result.GetSolution(prog.GetSequentialVariable("w")),
+      knot_state_value, tol));
 
   const solvers::VectorDecisionVariable<1>& t = prog.time();
   const solvers::VectorXDecisionVariable& u = prog.input();

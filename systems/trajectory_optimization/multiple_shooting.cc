@@ -157,6 +157,29 @@ MultipleShooting::AddStateTrajectoryCallback(
       {h_vars_, x_vars_});
 }
 
+solvers::Binding<solvers::VisualizationCallback>
+MultipleShooting::AddCompleteTrajectoryCallback(
+    const MultipleShooting::CompleteTrajectoryCallback& callback,
+    const std::string& name) {
+  const solvers::VectorXDecisionVariable extra_vars =
+      GetSequentialVariable(name);
+  int num_extra_vars = sequential_expression_manager_.num_rows(name);
+  return AddVisualizationCallback(
+      [this, callback, extra_vars,
+       num_extra_vars](const Eigen::Ref<const Eigen::VectorXd>& x) {
+        const Eigen::VectorXd times = GetSampleTimes(x.head(h_vars_.size()));
+        const Eigen::Map<const Eigen::MatrixXd> states(
+            x.data() + h_vars_.size(), num_states_, N_);
+        const Eigen::Map<const Eigen::MatrixXd> inputs(
+            x.data() + h_vars_.size() + x_vars_.size(), num_inputs_, N_);
+        const Eigen::Map<const Eigen::MatrixXd> extras(
+            x.data() + h_vars_.size() + u_vars_.size() + x_vars_.size(),
+            num_extra_vars, N_);
+        callback(times, states, inputs, extras);
+      },
+      {h_vars_, x_vars_, u_vars_, extra_vars});
+}
+
 void MultipleShooting::SetInitialTrajectory(
     const PiecewisePolynomial<double>& traj_init_u,
     const PiecewisePolynomial<double>& traj_init_x) {
@@ -251,6 +274,17 @@ MultipleShooting::ConstructPlaceholderVariableSubstitution(
 symbolic::Expression MultipleShooting::SubstitutePlaceholderVariables(
     const symbolic::Expression& e, int interval_index) const {
   return e.Substitute(ConstructPlaceholderVariableSubstitution(interval_index));
+}
+
+const solvers::VectorXDecisionVariable MultipleShooting::GetSequentialVariable(
+    const std::string& name) const {
+  int rows = sequential_expression_manager_.num_rows(name);
+  VectorX<symbolic::Expression> sequential_variable(rows * N_);
+  for (int i = 0; i < N_; i++) {
+    sequential_variable.segment(i * rows, rows) =
+        sequential_expression_manager_.GetSequentialExpressionsByName(name, i);
+  }
+  return symbolic::GetVariableVector(sequential_variable);
 }
 
 symbolic::Formula MultipleShooting::SubstitutePlaceholderVariables(
