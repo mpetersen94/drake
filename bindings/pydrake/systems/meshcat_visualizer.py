@@ -579,5 +579,6 @@ class MeshcatPointCloudVisualizer(LeafSystem):
         # `PointCloud` colors are on [0..1].
         rgbs = rgbs / 255.  # Do not use in-place so we can promote types.
         # Send to meshcat.
-        self._meshcat_viz[self._name].set_object(g.PointCloud(p_PQs, rgbs))
+        self._meshcat_viz[self._name].set_object(g.PointCloud(p_PQs, rgbs,
+                                                              size=0.1))
         self._meshcat_viz[self._name].set_transform(self._X_WP.matrix())
