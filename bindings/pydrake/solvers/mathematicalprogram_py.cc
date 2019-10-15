@@ -714,6 +714,9 @@ top-level documentation for :py:mod:`pydrake.math`.
       .def("bounding_box_constraints",
           &MathematicalProgram::bounding_box_constraints,
           doc.MathematicalProgram.bounding_box_constraints.doc)
+      .def("visualization_callbacks",
+          &MathematicalProgram::visualization_callbacks,
+          doc.MathematicalProgram.visualization_callbacks.doc)
       .def("linear_costs", &MathematicalProgram::linear_costs,
           doc.MathematicalProgram.linear_costs.doc)
       .def("quadratic_costs", &MathematicalProgram::quadratic_costs,

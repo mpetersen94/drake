@@ -62,7 +62,7 @@ template <typename T>
 void CheckQuaternion(const Eigen::Quaternion<T>& q) {
   const T norm_error = abs(q.coeffs().norm() - 1);
   if (norm_error >= kCheckTolerance) {
-    throw std::logic_error("Quaternion is not normalized");
+    // throw std::logic_error("Quaternion is not normalized");
   }
 }
 
