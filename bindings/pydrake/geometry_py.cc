@@ -492,7 +492,29 @@ void DoScalarIndependentDefinitions(py::module m) {
             "set_pose", &Class::set_pose, py::arg("X_PG"), cls_doc.set_pose.doc)
         .def("shape", &Class::shape, py_reference_internal, cls_doc.shape.doc)
         .def("release_shape", &Class::release_shape, cls_doc.release_shape.doc)
-        .def("name", &Class::name, cls_doc.name.doc);
+        .def("name", &Class::name, cls_doc.name.doc)
+        .def("set_proximity_properties", &Class::set_proximity_properties,
+            py::arg("properties"), cls_doc.set_proximity_properties.doc)
+        .def("set_illustration_properties", &Class::set_illustration_properties,
+            py::arg("properties"), cls_doc.set_illustration_properties.doc)
+        .def("set_perception_properties", &Class::set_perception_properties,
+            py::arg("properties"), cls_doc.set_perception_properties.doc);
+  }
+
+  // Geometry Properties
+  {
+    py::class_<ProximityProperties>(
+        m, "ProximityProperties", doc.ProximityProperties.doc)
+        .def(py::init<>(), doc.ProximityProperties.ctor.doc);
+    py::class_<IllustrationProperties>(
+        m, "IllustrationProperties", doc.IllustrationProperties.doc)
+        .def(py::init<>(), doc.IllustrationProperties.ctor.doc);
+    py::class_<PerceptionProperties>(
+        m, "PerceptionProperties", doc.PerceptionProperties.doc)
+        .def(py::init<>(), doc.PerceptionProperties.ctor.doc);
+    m.def("MakePhongIllustrationProperties", &MakePhongIllustrationProperties,
+        py_reference_internal, py::arg("diffuse"),
+        doc.MakePhongIllustrationProperties.doc);
   }
 
   // Rendering
