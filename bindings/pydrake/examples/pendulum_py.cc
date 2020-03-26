@@ -110,7 +110,7 @@ PYBIND11_MODULE(pendulum, m) {
       m, "PendulumGeometry", doc.PendulumGeometry.doc)
       .def_static("AddToBuilder", &PendulumGeometry::AddToBuilder,
           py::arg("builder"), py::arg("pendulum_state_port"),
-          py::arg("scene_graph"),
+          py::arg("scene_graph"), py::arg("base_name"), py::arg("X"),
           // Keep alive, ownership: `return` keeps `builder` alive.
           py::keep_alive<0, 1>(),
           // See #11531 for why `py_rvp::reference` is needed.

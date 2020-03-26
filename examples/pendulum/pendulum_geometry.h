@@ -35,10 +35,13 @@ class PendulumGeometry final : public systems::LeafSystem<double> {
   static const PendulumGeometry* AddToBuilder(
       systems::DiagramBuilder<double>* builder,
       const systems::OutputPort<double>& pendulum_state_port,
-      geometry::SceneGraph<double>* scene_graph);
+      geometry::SceneGraph<double>* scene_graph, std::string base_name,
+      math::RigidTransform<double> X);
 
  private:
-  explicit PendulumGeometry(geometry::SceneGraph<double>*);
+  explicit PendulumGeometry(geometry::SceneGraph<double>*,
+                            std::string base_name,
+                            math::RigidTransform<double> X);
   void OutputGeometryPose(const systems::Context<double>&,
                           geometry::FramePoseVector<double>*) const;
 
@@ -46,6 +49,7 @@ class PendulumGeometry final : public systems::LeafSystem<double> {
   geometry::SourceId source_id_;
   // The id for the pendulum (arm + point mass) frame.
   geometry::FrameId frame_id_;
+  math::RigidTransform<double> X_;
 };
 
 }  // namespace pendulum
