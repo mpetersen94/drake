@@ -1,0 +1,30 @@
+load(
+    "//tools/skylark:drake_cc.bzl",
+    "drake_cc_binary",
+)
+
+load(
+    "//tools/skylark:drake_py.bzl",
+    "drake_py_binary",
+)
+
+# drake_cc_binary(
+#     name = "joint_test_cc",
+#     srcs = ["joint_test.cc"],
+#     add_test_rule = 0,
+#     deps = [
+#         "//common:find_resource",
+#         "//common:is_approx_equal_abstol",
+#         "//geometry:geometry_visualization",
+#         "//lcm",
+#         "//systems/analysis:simulator",
+#         "//systems/framework:diagram",
+#         "@gflags",
+#     ],
+# )
+
+drake_py_binary(
+    name = "joint_test_py",
+    srcs = ["joint_test.py"],
+    deps = ["//bindings/pydrake"],
+)
