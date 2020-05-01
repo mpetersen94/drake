@@ -44,7 +44,7 @@ GTEST_TEST(TriangleQuadrature, BarycentricCoordsConsistent) {
 
 // A class for tests from TEST04 of:
 // NOLINTNEXTLINE(whitespace/line_length)
-// https://people.sc.fsu.edu/~jburkardt/f_src/triangle_dunavant_rule/triangle_dunavant_rule_prb_output.txt
+// https://people.sc.fsu.edu/~jburkardt/f_src/triangle_dunavant_rule/triangle_dunavant_rule_test.txt
 // where each result, integrated over the domain of the unit triangle, should
 // equal unity (1.0).
 class UnityQuadratureTest : public ::testing::Test {

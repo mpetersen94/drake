@@ -27,7 +27,7 @@ enum class Setup { kNone, kManipulationClass, kClutterClearing, kPlanarIiwa };
 /// @defgroup manipulation_station_systems Manipulation Station
 /// @{
 /// @brief Systems related to the "manipulation station" used in the <a
-/// href="https://manipulation.csail.mit.edu">MIT Intelligent Robot
+/// href="http://manipulation.csail.mit.edu">MIT Intelligent Robot
 /// Manipulation</a> class.
 /// @ingroup example_systems
 /// @}
