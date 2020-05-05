@@ -151,23 +151,26 @@ PYBIND11_MODULE(acrobot, m) {
       .def_static("AddToBuilder",
           py::overload_cast<systems::DiagramBuilder<double>*,
               const systems::OutputPort<double>&, const AcrobotParams<double>&,
-              geometry::SceneGraph<double>*>(&AcrobotGeometry::AddToBuilder),
+              geometry::SceneGraph<double>*, std::string,
+              math::RigidTransform<double>>(&AcrobotGeometry::AddToBuilder),
           py::arg("builder"), py::arg("acrobot_state_port"),
           py::arg("acrobot_params"), py::arg("scene_graph"),
+          py::arg("base_name"), py::arg("X"),
           // Keep alive, ownership: `return` keeps `builder` alive.
           py::keep_alive<0, 1>(),
           // See #11531 for why `py_rvp::reference` is needed.
-          py_rvp::reference, doc.AcrobotGeometry.AddToBuilder.doc_4args)
+          py_rvp::reference, doc.AcrobotGeometry.AddToBuilder.doc_6args)
       .def_static("AddToBuilder",
           py::overload_cast<systems::DiagramBuilder<double>*,
               const systems::OutputPort<double>&,
-              geometry::SceneGraph<double>*>(&AcrobotGeometry::AddToBuilder),
+              geometry::SceneGraph<double>*, std::string,
+              math::RigidTransform<double>>(&AcrobotGeometry::AddToBuilder),
           py::arg("builder"), py::arg("acrobot_state_port"),
-          py::arg("scene_graph"),
+          py::arg("scene_graph"), py::arg("base_name"), py::arg("X"),
           // Keep alive, ownership: `return` keeps `builder` alive.
           py::keep_alive<0, 1>(),
           // See #11531 for why `py_rvp::reference` is needed.
-          py_rvp::reference, doc.AcrobotGeometry.AddToBuilder.doc_3args);
+          py_rvp::reference, doc.AcrobotGeometry.AddToBuilder.doc_5args);
 }
 
 }  // namespace pydrake

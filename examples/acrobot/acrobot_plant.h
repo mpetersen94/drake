@@ -64,8 +64,8 @@ class AcrobotPlant : public systems::LeafSystem<T> {
 
   /// Evaluates the input port and returns the scalar value
   /// of the commanded torque.
-  const T& get_tau(const systems::Context<T>& context) const {
-    return this->EvalVectorInput(context, 0)->GetAtIndex(0);
+  const VectorX<T> get_tau(const systems::Context<T>& context) const {
+    return this->EvalVectorInput(context, 0)->get_value();
   }
 
   static const AcrobotState<T>& get_state(

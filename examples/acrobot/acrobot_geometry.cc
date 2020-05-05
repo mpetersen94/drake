@@ -29,12 +29,13 @@ const AcrobotGeometry* AcrobotGeometry::AddToBuilder(
     systems::DiagramBuilder<double>* builder,
     const systems::OutputPort<double>& acrobot_state_port,
     const AcrobotParams<double>& acrobot_params,
-    geometry::SceneGraph<double>* scene_graph) {
+    geometry::SceneGraph<double>* scene_graph, std::string base_name,
+    math::RigidTransform<double> X) {
   DRAKE_THROW_UNLESS(builder != nullptr);
   DRAKE_THROW_UNLESS(scene_graph != nullptr);
 
   auto acrobot_geometry = builder->AddSystem(std::unique_ptr<AcrobotGeometry>(
-      new AcrobotGeometry(acrobot_params, scene_graph)));
+      new AcrobotGeometry(acrobot_params, scene_graph, base_name, X)));
   builder->Connect(acrobot_state_port, acrobot_geometry->get_input_port(0));
   builder->Connect(
       acrobot_geometry->get_output_port(0),
@@ -44,9 +45,12 @@ const AcrobotGeometry* AcrobotGeometry::AddToBuilder(
 }
 
 AcrobotGeometry::AcrobotGeometry(const AcrobotParams<double>& params,
-                                 geometry::SceneGraph<double>* scene_graph)
+                                 geometry::SceneGraph<double>* scene_graph,
+                                 std::string base_name,
+                                 math::RigidTransform<double> X)
     : l1_(params.l1()) {
   DRAKE_THROW_UNLESS(scene_graph != nullptr);
+  X_ = X;
   source_id_ = scene_graph->RegisterSource();
 
   // Note: using AcrobotState as the port type would have complicated the
@@ -58,30 +62,30 @@ AcrobotGeometry::AcrobotGeometry(const AcrobotParams<double>& params,
   // The base.
   GeometryId id = scene_graph->RegisterAnchoredGeometry(
       source_id_,
-      make_unique<GeometryInstance>(math::RigidTransformd::Identity(),
-                                    make_unique<Box>(.2, 0.2, 0.2), "base"));
+      make_unique<GeometryInstance>(X * math::RigidTransformd::Identity(),
+                                    make_unique<Box>(.2, 0.2, 0.2), base_name + "base"));
   scene_graph->AssignRole(
       source_id_, id, MakePhongIllustrationProperties(Vector4d(0, 1, 0, 1)));
 
   // The upper link.
   upper_link_frame_id_ =
-      scene_graph->RegisterFrame(source_id_, GeometryFrame("upper_link"));
+      scene_graph->RegisterFrame(source_id_, GeometryFrame(base_name + "upper_link"));
   id = scene_graph->RegisterGeometry(
       source_id_, upper_link_frame_id_,
       make_unique<GeometryInstance>(
           math::RigidTransformd(Vector3d(0., 0.15, -params.l1() / 2.)),
-          make_unique<Cylinder>(0.05, params.l1()), "upper_link"));
+          make_unique<Cylinder>(0.05, params.l1()), base_name+"upper_link"));
   scene_graph->AssignRole(
       source_id_, id, MakePhongIllustrationProperties(Vector4d(1, 0, 0, 1)));
 
   // The lower link.
   lower_link_frame_id_ =
-      scene_graph->RegisterFrame(source_id_, GeometryFrame("lower_link"));
+      scene_graph->RegisterFrame(source_id_, GeometryFrame(base_name+"lower_link"));
   id = scene_graph->RegisterGeometry(
       source_id_, lower_link_frame_id_,
       make_unique<GeometryInstance>(
           math::RigidTransformd(Vector3d(0., 0.25, -params.l2() / 2.)),
-          make_unique<Cylinder>(0.05, params.l2()), "lower_link"));
+          make_unique<Cylinder>(0.05, params.l2()), base_name+"lower_link"));
   scene_graph->AssignRole(
       source_id_, id, MakePhongIllustrationProperties(Vector4d(0, 0, 1, 1)));
 }
@@ -104,8 +108,8 @@ void AcrobotGeometry::OutputGeometryPose(
       math::RotationMatrixd::MakeYRotation(theta1 + theta2),
       Vector3d(-l1_ * std::sin(theta1), 0, -l1_ * std::cos(theta1)));
 
-  *poses = {{upper_link_frame_id_, upper_link_pose},
-            {lower_link_frame_id_, lower_link_pose}};
+  *poses = {{upper_link_frame_id_, X_*upper_link_pose},
+            {lower_link_frame_id_, X_*lower_link_pose}};
 }
 
 }  // namespace acrobot

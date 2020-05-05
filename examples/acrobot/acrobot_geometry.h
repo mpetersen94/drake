@@ -42,7 +42,8 @@ class AcrobotGeometry final : public systems::LeafSystem<double> {
       systems::DiagramBuilder<double>* builder,
       const systems::OutputPort<double>& acrobot_state_port,
       const AcrobotParams<double>& acrobot_params,
-      geometry::SceneGraph<double>* scene_graph);
+      geometry::SceneGraph<double>* scene_graph, std::string base_name,
+      math::RigidTransform<double> X);
 
   /// Creates, adds, and connects an AcrobotGeometry system into the given
   /// `builder`.  Both the `acrobot_state.get_system()` and `scene_graph`
@@ -56,14 +57,16 @@ class AcrobotGeometry final : public systems::LeafSystem<double> {
   static const AcrobotGeometry* AddToBuilder(
       systems::DiagramBuilder<double>* builder,
       const systems::OutputPort<double>& acrobot_state_port,
-      geometry::SceneGraph<double>* scene_graph) {
+      geometry::SceneGraph<double>* scene_graph, std::string base_name,
+      math::RigidTransform<double> X) {
     return AddToBuilder(builder, acrobot_state_port, AcrobotParams<double>(),
-                        scene_graph);
+                        scene_graph, base_name, X);
   }
 
  private:
   AcrobotGeometry(const AcrobotParams<double>& acrobot_params,
-                  geometry::SceneGraph<double>*);
+                  geometry::SceneGraph<double>*, std::string base_name,
+                  math::RigidTransform<double> X);
   void OutputGeometryPose(const systems::Context<double>&,
                           geometry::FramePoseVector<double>*) const;
 
@@ -76,6 +79,7 @@ class AcrobotGeometry final : public systems::LeafSystem<double> {
   // Local copy of the parameter required for the forward kinematics (the
   // length of the upper link).
   const double l1_;
+  math::RigidTransform<double> X_;
 };
 
 }  // namespace acrobot

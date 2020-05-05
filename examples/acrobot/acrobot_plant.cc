@@ -20,7 +20,7 @@ namespace acrobot {
 template <typename T>
 AcrobotPlant<T>::AcrobotPlant()
     : systems::LeafSystem<T>(systems::SystemTypeTag<AcrobotPlant>{}) {
-  this->DeclareVectorInputPort("elbow_torque", AcrobotInput<T>());
+  this->DeclareVectorInputPort("elbow_torque", systems::BasicVector<T>(2));
   this->DeclareVectorOutputPort("acrobot_state", AcrobotState<T>(),
                                 &AcrobotPlant::CopyStateOut);
   this->DeclareContinuousState(AcrobotState<T>(), 2 /* num_q */, 2 /* num_v */,
@@ -112,15 +112,15 @@ void AcrobotPlant<T>::DoCalcTimeDerivatives(
     const systems::Context<T>& context,
     systems::ContinuousState<T>* derivatives) const {
   const AcrobotState<T>& state = get_state(context);
-  const T& tau = get_tau(context);
+  const Vector2<T>& tau = get_tau(context);
 
   const Matrix2<T> M = MassMatrix(context);
   const Vector2<T> bias = DynamicsBiasTerm(context);
-  const Vector2<T> B(0, 1);  // input matrix
+  // const Vector2<T> B(0, 1);  // input matrix
 
   Vector4<T> xdot;
   xdot << state.theta1dot(), state.theta2dot(),
-          M.inverse() * (B * tau - bias);
+          M.inverse() * (tau - bias);
   derivatives->SetFromVector(xdot);
 }
 
@@ -130,11 +130,11 @@ void AcrobotPlant<T>::DoCalcImplicitTimeDerivativesResidual(
     const systems::ContinuousState<T>& proposed_derivatives,
     EigenPtr<VectorX<T>> residual) const {
   const AcrobotState<T>& state = get_state(context);
-  const T& tau = get_tau(context);
+  const Vector2<T> tau = get_tau(context);
 
   const Matrix2<T> M = MassMatrix(context);
   const Vector2<T> bias = DynamicsBiasTerm(context);
-  const Vector2<T> B(0, 1);  // input matrix
+  // const Vector2<T> B(0, 1);  // input matrix
 
   const auto& proposed_qdot = proposed_derivatives.get_generalized_position();
   const auto proposed_vdot =
@@ -142,7 +142,7 @@ void AcrobotPlant<T>::DoCalcImplicitTimeDerivativesResidual(
 
   *residual << proposed_qdot[0] - state.theta1dot(),
                proposed_qdot[1] - state.theta2dot(),
-               M * proposed_vdot - (B * tau - bias);
+               M * proposed_vdot - (tau - bias);
 }
 
 template <typename T>
