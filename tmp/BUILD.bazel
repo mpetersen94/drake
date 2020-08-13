@@ -1,0 +1,22 @@
+# -*- python -*-
+# This file contains rules for Bazel; see drake/doc/bazel.rst.
+
+load(
+    "@drake//tools/skylark:drake_cc.bzl",
+    "drake_cc_binary",
+    "drake_cc_googletest",
+    "drake_cc_library",
+)
+load(
+    "@drake//tools/skylark:drake_py.bzl",
+    "drake_py_binary",
+    "drake_py_library",
+)
+
+drake_py_binary(
+    name = "broken_drake_viz",
+    srcs = ["broken_drake_viz.py"],
+    deps = [
+        "//bindings/pydrake",
+    ],
+)
