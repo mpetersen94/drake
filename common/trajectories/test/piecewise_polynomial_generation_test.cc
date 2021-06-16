@@ -732,6 +732,60 @@ GTEST_TEST(SplineTests, LagrangeInterpolatingPolynomialTest) {
   }
 }
 
+GTEST_TEST(SplineTests, CubicTimingTest) {
+  int iters = 50;
+
+  Eigen::VectorXd t = Eigen::VectorXd::LinSpaced(100, 0, 99);
+  Eigen::MatrixXd y = Eigen::MatrixXd::Random(10, 100);
+  Eigen::VectorXd ydot0 = Eigen::VectorXd::Zero(10);
+  Eigen::VectorXd ydot_end = Eigen::VectorXd::Zero(10);
+
+  {
+    std::chrono::time_point<std::chrono::steady_clock> start =
+        std::chrono::steady_clock::now();
+    for (int ii = 0; ii < iters; ii++) {
+      PiecewisePolynomial<double> spline =
+          PiecewisePolynomial<double>::CubicWithContinuousSecondDerivatives(
+              t, y, ydot0, ydot_end);
+    }
+    std::chrono::time_point<std::chrono::steady_clock> end =
+        std::chrono::steady_clock::now();
+    std::chrono::milliseconds diff =
+        std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Time: " << diff.count() << std::endl;
+  }
+
+  {
+    std::chrono::time_point<std::chrono::steady_clock> start =
+        std::chrono::steady_clock::now();
+    for (int ii = 0; ii < iters; ii++) {
+      PiecewisePolynomial<double> spline =
+          PiecewisePolynomial<double>::CubicWithContinuousSecondDerivatives(
+              t, y, false);
+    }
+    std::chrono::time_point<std::chrono::steady_clock> end =
+        std::chrono::steady_clock::now();
+    std::chrono::milliseconds diff =
+        std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Time: " << diff.count() << std::endl;
+  }
+
+  {
+    std::chrono::time_point<std::chrono::steady_clock> start =
+        std::chrono::steady_clock::now();
+    for (int ii = 0; ii < iters; ii++) {
+      PiecewisePolynomial<double> spline =
+          PiecewisePolynomial<double>::CubicWithContinuousSecondDerivatives(
+              t, y, true);
+    }
+    std::chrono::time_point<std::chrono::steady_clock> end =
+        std::chrono::steady_clock::now();
+    std::chrono::milliseconds diff =
+        std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Time: " << diff.count() << std::endl;
+  }
+}
+
 }  // namespace
 }  // namespace trajectories
 }  // namespace drake
